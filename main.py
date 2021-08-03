@@ -23,28 +23,48 @@ states_data = pandas.read_csv("50_states.csv")
 list_of_states = states_data["state"].to_list()
 # print(list_of_states)
 # convert given state names to all lowercase to match regardless of case
-list_of_states = list(pandas.Series(list_of_states).str.lower())
-# print(list_of_states)
+# list_of_states = list(pandas.Series(list_of_states).str.lower())
+
+list_of_states = [state.lower() for state in list_of_states]
+
+def print_missed_states(list_of_misses):
+    state_text.color("red")
+    for guess in list_of_misses:
+        state_row = states_data[states_data.state.str.lower() == guess]
+        x_cor = int(state_row.x)
+        y_cor = int(state_row.y)
+        state_text.goto(x_cor, y_cor)
+        state_text.write(guess)
+
+
+
 num_states_correct = 0
 num_guesses = 0
-while num_states_correct < 5 and num_guesses < 7:
+guessed_states = []
+is_done = False
+while num_states_correct < 50 and num_guesses < 100 and not is_done:
 
     guess = screen.textinput(title=f"You have {num_states_correct}/50 correct", prompt="Type a state: ").lower()
+    if guess == "q":
+        is_done = True
+
     num_guesses += 1
     # check if state is in list
 
     if guess in list_of_states:
         num_states_correct += 1
+        guessed_states.append(guess)
         # get x,y location of state
         state_row = states_data[states_data.state.str.lower() == guess]
         x_cor = int(state_row.x)
         y_cor = int(state_row.y)
-        print(x_cor)
         state_text.goto(x_cor, y_cor)
         state_text.write(guess)
 
 game_over.setposition(0, 240)
-game_over.write(f"You used {num_guesses} guesses", align="center", font=("Courier", 24))
+missed_states = [state for state in list_of_states if state not in guessed_states]
+print_missed_states(missed_states)
+game_over.write(f"You used {num_guesses} guesses to get {len(guessed_states)} correct", align="center", font=("Courier", 18))
 turtle.mainloop()
 
 # add name to correct x, y location on map
